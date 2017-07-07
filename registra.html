@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Registra</title>
+<link rel="stylesheet" href="./css/mystyle.css">
+<link rel="stylesheet" href="./css/bootstrap.css">
+<link rel="stylesheet" href="./css/mystyle.css">
+<link rel="stylesheet" href="./css/font-awesome.min.css">
+<script src="./js/jquery-3.1.1.min.js"></script>
+<script src="./js/bootstrap.min.js"></script>
+<script src="./js/jquery.table2excel.js"></script>
+<script src="./json/registration.json"></script>
+
+<script type="text/javascript">
+
+// var registra_obj = $.getJSON("./json/registra_dict.json", function(registra_dict) {});
+
+var registra_new = [];
+var uid,eid;
+var result;
+
+if(localStorage.getItem('registra_local')) {
+	registra_local = JSON.parse(localStorage.getItem('registra_local'));
+}
+else {
+	registra_local = registra_obj;
+}
+
+if(localStorage.getItem('registra_new')) {
+	registra_new = JSON.parse(localStorage.getItem('registra_new'));
+}
+
+create_table();
+
+$(function(){
+	$("#export").click(function(){
+		  $("#regist_tbl").table2excel({
+		    exclude: ".noExl",
+			fileext: ".xls",
+		    name: "registration",
+		    filename: "registration"
+		  }); 
+		});
+});
+
+$(function() {
+			$('#ddstatus').text("");
+			$('#q').focus();
+			$('#q').keyup(function(event) {
+				var q = $('#q').val();
+				if(q.length>=6){
+					dosearch();
+				}
+			});
+			$('#bt_regist').hide();
+			$('#sessions').hide();
+ });
+
+function create_table() {
+	if (registra_new) {
+		$("#regist_tbl tbody").remove();
+		result="";
+		$(function () {
+			$.each(registra_new, function(key,val){
+				if(val.checkregist!=null) {
+					var emp_id;
+					emp_id = '="'+val.employeeid+'"';
+					result+="<tr><td>"+val.checkregist+"</td><td style='display:none;'>"+emp_id+"</td><td>"+val.fnameth+" "+val.lnameth+"</td><td style='display:none;'>"+val.bu2+"</td><td style='display:none;'>"+val.bu3+"</td><td style='display:none;'>"+val.bu4+"</td></tr>";
+				}
+			});
+			$('#regist_tbl').append('<tbody></tbody>');
+			$('#regist_tbl tbody').append(result);
+		});
+	}
+}
+
+function search_emp(q) {
+	for (var i in registra_new) {
+		if (registra_new[i]) {
+		if (registra_new[i].idcard==q) {
+			return true;
+		}
+		}
+	}
+	return false;
+}
+	
+function dosearch(q) {
+	var elist = $('#elist').find('option:selected').val();
+// 	if(elist==-1){
+// 		alert('กรุณาเลือก Event ก่อนค้นหา');
+// 		$('#elist').focus();
+// 		return;
+// 	}
+
+	$('#dname').html("");
+	$('#bu3').html("");
+	$('#bu2').html("");
+	$('#uid').html("");
+	$('#ddstatus').html("");
+	$('#bt_regist').hide();
+	$('#sessions').hide();
+
+	var q = $('#q').val();
+			$('#q').focus();
+					
+		if(registra_local[q]) {
+			var n = registra_local[q];
+			uid = n.employeeid;
+			$('#dname').html(n.fnameth+" "+n.lnameth);
+			$('#bu3').html(n.bu3);
+			$('#bu2').html(n.bu2);
+			$('#uid').html(uid);
+			$('#sessions').show();
+			
+			if(search_emp(q)==true) {
+				$('#bt_regist').hide();
+				$('#ddstatus').text("ลงทะเบียนแล้ว");
+				document.getElementById('q').value = "";
+			}
+			else {
+				document.getElementById('bt_regist').disabled = false;
+				$('#bt_regist').show();
+				$('#ddstatus').text("");
+			}
+		}
+
+		else if(registra_local[q]==null) {
+			$.each(registra_local, function(key,val){
+				if(val.employeeid==q) {
+					$('#q').val(key);
+					q = key;
+					$('#dname').html(val.fnameth+" "+val.lnameth);
+					$('#bu3').html(val.bu3);
+					$('#bu2').html(val.bu2);
+					$('#uid').html(val.employeeid);
+					$('#sessions').show();
+						
+					if(search_emp(q)==true) {
+						$('#bt_regist').hide();
+						$('#ddstatus').text("ลงทะเบียนแล้ว");
+						document.getElementById('q').value = "";
+					}
+					else {
+						document.getElementById('bt_regist').disabled = false;
+						$('#bt_regist').show();
+						$('#ddstatus').text("");
+					}
+				}
+				else return;
+			});
+		}
+			
+		else {
+			result="";
+			$('#sessions').hide();
+	}
+	auto_mode();
+}
+
+function doregist() {
+	var q = $('#q').val();
+			$('#q').focus();
+
+	if(registra_local[q]!=null) {
+		var num = registra_new.length;
+		var date = new Date();
+		var registime = date.toLocaleString();
+		
+		registra_new[num] = registra_local[q];
+		registra_new[num].idcard = q;
+		registra_new[num].checkregist = registime;
+		
+		document.getElementById('bt_regist').disabled = "{opacity: 0.5;cursor: not-allowed;}";
+	
+		$('#ddstatus').html("การยืนยันสำเร็จแล้ว");
+			
+		localStorage.setItem('registra_new', JSON.stringify(registra_new));
+		
+		document.getElementById('q').value = "";
+		
+		create_table();
+	}
+	
+}
+
+function auto_mode() {
+	if($('#auto_mode').is(":checked")) {
+		document.getElementById("bt_regist").click();
+	}
+}
+
+function clear_local() {
+	var clear = "CLEAR"
+    var confirm_clear = prompt('ต้องการเคลียร์ข้อมูล ? พิมพ์ "CLEAR" เพื่อยืนยัน', "");
+    
+    if (confirm_clear == "CLEAR") {
+    	registra_new = [];
+    	localStorage.clear();
+    	result="";
+    	registra_new=[];
+    	registra_local={};
+    	$("#regist_tbl tbody").remove();
+    	$('#regist_tbl').append('<tbody></tbody>');
+    	$('#regist_tbl tbody').append(result);
+    	alert("ข้อมูลถูกลบแล้ว !")
+    }
+}
+
+function toggle_alert(unfocus) {
+	if(unfocus==1) {
+		if($('#bt_regist').css('display')=="none"||document.getElementById('bt_regist').disabled) {
+			$('#toggle_alert').show();
+			$('#toggle_alert').html("กรุณาคลิกที่ช่อง id / code .. เพื่อสแกนต่อ").css("color", "red");
+			$('#q').css({"background-color":"red","opacity":"0.5"});
+		}
+	}
+	else {
+		$('#toggle_alert').hide();
+		$('#q').css({"background-color":"white","opacity":"1"});
+	}
+}
+
+$(document).keypress(function(e){
+    var checkWebkitandIE=(e);
+    var checkMoz=(e);
+	var audio = new Audio('car_horn.mp3');
+	
+	if(document.activeElement.id!="q") {
+		if (checkWebkitandIE || checkMoz) {
+		audio.play();
+		}
+	}
+});
+
+</script>
+
+<style></style>
+
+</head>
+<body>
+
+<div>
+<div class="navbar-inner">
+	<div class="pull-left" style="margin-left:5px;margin-top:20px">Registration</div>
+
+	<div class="pull-left">	
+	<select id="elist" style="margin-left: 20px;margin-top: 10px;width: 400px;height: 35px;">
+		<option value="-1">เลือก event</option>
+	</select>
+</div>
+<div>
+	<input id="staff" value="" style="width:100px;height: 36px;margin-top:10px;margin-left:10px;text-align: center;" placeholder="staff name"/>
+	<button id="clear_local" onclick="clear_local()" class="btn btn-danger" style="margin-left:10px;margin-top:10px;" >Clear ข้อมูล</button>
+</div>
+</div>
+
+</div>
+
+<div>
+<div style="width: 90%;margin-left:10px;margin-top:10px;">
+	<input id="q" value="" style="width:300px;height: 36px; margin-left:30px;font-size: 20px;" placeholder="id / code / name / mobile no." onblur="toggle_alert(1)" onfocus="toggle_alert(0)" autofocus="autofocus" />
+	<button id="dodraw" style="width: 75px;height: 35px;font-size: 20px;" class="btn btn-warning" onclick="dosearch()">ค้นหา</button>
+	<input type="checkbox" id="auto_mode" >auto confirm</input>
+</div>
+
+<div style="float: left; width:500px; clear: left; margin-left:10px; margin-top: 10px;">
+	<div id="dname" style="text-align: center;font-size: 35px;margin-top: 35px;color: blue;">ชื่อ-นามสกุล</div>
+	<div id="bu3" style="text-align: center;font-size: 25px;margin-top: 30px;">ฝ่าย</div>
+	<div id="bu2" style="text-align: center;font-size: 25px;margin-top: 15px;">ศูนย์</div>
+	<div id="uid" style="text-align: center;font-size: 25px;margin-top: 15px;">ID</div>
+	
+	<div class="clearfix"></div>
+	<div style="text-align: center; margin-top: 20px;">
+		<button id="bt_regist" class="btn btn-success" style="width: 75px; display: none;" onclick="doregist()" >ยืนยัน</button>
+	</div>
+	
+	<div id="ddstatus" style="text-align: center;font-size: 18px;margin-top: 15px;color:blue;"></div>
+	<div id="toggle_alert" style="text-align: center;font-size: 16px;margin-top: 10px;"></div>
+</div>
+
+<div style="float: left; margin-left:10px; margin-top: 10px;" >
+<table id="regist_tbl" >
+<thead><th>Registration</th><th style='display:none;'>รหัสพนักงาน</th><th style='display:none;'>ชื่อ-นามสกุล</th><th style='display:none;'>ศูนย์</th><th style='display:none;'>ฝ่าย</th><th style='display:none;'>งาน</th></thead>
+
+</table>
+<div style="float: left;clear: left;">
+	<button id="export" class="btn btn-info" >Export Excel</button>
+	
+</div>
+</div>
+
+</div>
+
+</body>
+</html>
