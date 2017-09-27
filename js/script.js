@@ -19,15 +19,15 @@ var beep = new Audio('sound/beep.mp3')
 		registra_new = JSON.parse(localStorage.getItem('registra_new'));
 	}
 	
-	if (localStorage.getItem('employee_data')) {
-		event_select = localStorage.getItem('event_select');
-		person_data = JSON.parse(localStorage.getItem('person_data'));
-		employee_data = JSON.parse(localStorage.getItem('employee_data'));
-		event_option();
-	}
-	else {
-		get_data();
-	}
+//	if (localStorage.getItem('employee_data')) {
+//		event_select = localStorage.getItem('event_select');
+//		person_data = JSON.parse(localStorage.getItem('person_data'));
+//		employee_data = JSON.parse(localStorage.getItem('employee_data'));
+//		event_option();
+//	}
+//	else {
+//		get_data();
+//	}
 
 create_table();
 
