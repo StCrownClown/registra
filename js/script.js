@@ -5,8 +5,8 @@ var uid,eid,result,elist;
 var json_data,event_select,person_data,employee_data;
 
 var warn_c = 0;
-var correct = new Audio('correct.mp3');
-var beep = new Audio('beep.mp3')
+var correct = new Audio('sound/correct.mp3');
+var beep = new Audio('sound/beep.mp3')
 
 	if(localStorage.getItem('registra_local')) {
 		registra_local = JSON.parse(localStorage.getItem('registra_local'));
